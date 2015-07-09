@@ -13,13 +13,13 @@ items = [
     {
         'id': 2,
         'name': 'Learn Python',
-        'type': 'book'
+        'type': 'book',
         'checkedIn': True
     },
     {
         'id': 3,
         'name': 'Spark Core',
-        'type': 'hardware'
+        'type': 'hardware',
         'checkedIn': False
     }
 ]
@@ -30,7 +30,7 @@ def not_found(error):
 
 @app.errorhandler(400)
 def not_found(error):
-    return make_response(jsonify({'error': 'Book creation failed'}), 400)
+    return make_response(jsonify({'error': 'Bad request'}), 400)
 
 @app.route('/api/v1.0/items', methods=['GET'])
 def get_items():
