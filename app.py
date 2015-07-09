@@ -60,6 +60,14 @@ def get_items():
             return jsonify({'item': item})
         else:
             return jsonify({'items': item})
+    elif 'checkedin' in request.args:
+        item = [item for item in items if str(item['checkedIn']).lower() == request.args['checkedin'].lower()]
+        if len(item) == 0:
+            abort(404)
+        elif len(item) == 1:
+            return jsonify({'item': item})
+        else:
+            return jsonify({'items': item})
     else:
         return jsonify({'items': items})
 
