@@ -3,16 +3,24 @@ from flask import abort, Flask, jsonify, make_response, request
 
 app = Flask(__name__)
 
-books = [
+items = [
     {
         'id': 1,
-        'title': 'Learn C++',
+        'name': 'Learn C++',
+        'type': 'book',
         'checkedIn': True
     },
     {
         'id': 2,
-        'title': 'Learn Python',
+        'name': 'Learn Python',
+        'type': 'book'
         'checkedIn': True
+    },
+    {
+        'id': 3,
+        'name': 'Spark Core',
+        'type': 'hardware'
+        'checkedIn': False
     }
 ]
 
@@ -24,50 +32,53 @@ def not_found(error):
 def not_found(error):
     return make_response(jsonify({'error': 'Book creation failed'}), 400)
 
-@app.route('/api/v1.0/books', methods=['GET'])
-def get_books():
-    return jsonify({'books': books})
+@app.route('/api/v1.0/items', methods=['GET'])
+def get_items():
+    return jsonify({'items': items})
 
-@app.route('/api/v1.0/books', methods=['POST'])
-def create_book():
-    if not request.json or not 'title' in request.json:
+@app.route('/api/v1.0/items', methods=['POST'])
+def create_item():
+    if not request.json or not 'name' in request.json or not 'type' in request.json:
         abort(400)
-    book = {
-        'id': books[-1]['id'] + 1,
-        'title': request.json['title'],
+    item = {
+        'id': items[-1]['id'] + 1,
+        'name': request.json['name'],
+        'type': request.json['type'],
         'checkedIn': True
     }
-    books.append(book)
-    return jsonify({'book': book}), 201
+    items.append(item)
+    return jsonify({'item': item}), 201
 
-@app.route('/api/v1.0/books/<int:book_id>', methods=['GET'])
-def get_book(book_id):
-    book = [book for book in books if book['id'] == book_id]
-    if len(book) == 0:
+@app.route('/api/v1.0/items/<int:item_id>', methods=['GET'])
+def get_item(item_id):
+    item = [item for item in items if item['id'] == item_id]
+    if len(item) == 0:
         abort(404)
-    return jsonify({'book': book[0]})
+    return jsonify({'item': item[0]})
 
-@app.route('/api/v1.0/books/<int:book_id>', methods=['PUT'])
-def update_book(book_id):
-    book = [book for book in books if book['id'] == book_id]
-    if len(book) == 0:
+@app.route('/api/v1.0/items/<int:item_id>', methods=['PUT'])
+def update_item(item_id):
+    item = [item for item in items if item['id'] == item_id]
+    if len(item) == 0:
         abort(404)
     if not request.json:
         abort(400)
-    if 'title' in request.json and type(request.json['title']) != unicode:
+    if 'name' in request.json and type(request.json['name']) != unicode:
         abort(400)
-    if 'done' in request.json and type(request.json['done']) is not bool:
+    if 'type' in request.json and type(request.json['type']) != unicode:
         abort(400)
-    book[0]['title'] = request.json.get('title', book[0]['title'])
-    book[0]['done'] = request.json.get('done', book[0]['done'])
-    return jsonify({'book': book[0]})
+    if 'checkedIn' in request.json and type(request.json['done']) is not bool:
+        abort(400)
+    item[0]['name'] = request.json.get('name', item[0]['name'])
+    item[0]['checkedIn'] = request.json.get('checkedIn', item[0]['checkedIn'])
+    return jsonify({'item': item[0]})
 
-@app.route('/api/v1.0/books/<int:book_id>', methods=['DELETE'])
-def delete_book(book_id):
-    book = [book for book in books if book['id'] == book_id]
-    if len(book) == 0:
+@app.route('/api/v1.0/items/<int:item_id>', methods=['DELETE'])
+def delete_item(item_id):
+    item = [item for item in items if item['id'] == item_id]
+    if len(item) == 0:
         abort(404)
-    books.remove(book[0])
+    items.remove(item[0])
     return jsonify({'result': True})
 
 if __name__ == '__main__':
