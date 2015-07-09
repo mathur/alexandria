@@ -68,6 +68,14 @@ def get_items():
             return jsonify({'item': item})
         else:
             return jsonify({'items': item})
+    elif 'search' in request.args:
+        item = [item for item in items if request.args['search'].lower() in str(item['name']).lower()]
+        if len(item) == 0:
+            abort(404)
+        elif len(item) == 1:
+            return jsonify({'item': item})
+        else:
+            return jsonify({'items': item})
     else:
         return jsonify({'items': items})
 
