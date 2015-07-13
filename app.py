@@ -1,7 +1,11 @@
 #!flask/bin/python
 from flask import abort, Flask, jsonify, make_response, request
+from models import Base, Item
+from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+db = SQLAlchemy(app)
 
 items = [
     {
@@ -24,6 +28,13 @@ items = [
     }
 ]
 
+@app.before_first_request
+def setup():
+    Base.metadata.drop_all(bind=db.engine)
+    Base.metadata.create_all(bind=db.engine)
+    db.session.add(Item(title='Learn C++', item_type='book', description='The best book to learn C++ from', num_availible=2))
+    db.session.add(Item(title='Learn Python', item_type='book', description='The best book to learn Python from', num_availible=1))
+    db.session.add(Item(title='Spark Core', item_type='hardware', description='Mini arduino for networking uses', num_availible=4))
 
 """
 Return the json of a 404 error
@@ -47,37 +58,36 @@ Get either a list of items, a specific item by id, or all the items of a certain
 @app.route('/api/v1.0/items', methods=['GET'])
 def get_items():
     if 'id' in request.args:
-        item = [item for item in items if str(
-            item['id']) == request.args['id']]
+        item = Item.query.filter_by(id=request.args['id'].first())
         if len(item) == 0:
             abort(404)
-        return jsonify({'item': item[0]})
-    elif 'type' in request.args:
-        item = [item for item in items if item['type'] == request.args['type']]
-        if len(item) == 0:
-            abort(404)
-        elif len(item) == 1:
-            return jsonify({'item': item})
-        else:
-            return jsonify({'items': item})
-    elif 'checkedin' in request.args:
-        item = [item for item in items if str(item['checkedIn']).lower() == request.args['checkedin'].lower()]
-        if len(item) == 0:
-            abort(404)
-        elif len(item) == 1:
-            return jsonify({'item': item})
-        else:
-            return jsonify({'items': item})
-    elif 'search' in request.args:
-        item = [item for item in items if request.args['search'].lower() in str(item['name']).lower()]
-        if len(item) == 0:
-            abort(404)
-        elif len(item) == 1:
-            return jsonify({'item': item})
-        else:
-            return jsonify({'items': item})
-    else:
-        return jsonify({'items': items})
+        return jsonify({'item': item})
+    # elif 'type' in request.args:
+    #     item = [item for item in items if item['type'] == request.args['type']]
+    #     if len(item) == 0:
+    #         abort(404)
+    #     elif len(item) == 1:
+    #         return jsonify({'item': item})
+    #     else:
+    #         return jsonify({'items': item})
+    # elif 'checkedin' in request.args:
+    #     item = [item for item in items if str(item['checkedIn']).lower() == request.args['checkedin'].lower()]
+    #     if len(item) == 0:
+    #         abort(404)
+    #     elif len(item) == 1:
+    #         return jsonify({'item': item})
+    #     else:
+    #         return jsonify({'items': item})
+    # elif 'search' in request.args:
+    #     item = [item for item in items if request.args['search'].lower() in str(item['name']).lower()]
+    #     if len(item) == 0:
+    #         abort(404)
+    #     elif len(item) == 1:
+    #         return jsonify({'item': item})
+    #     else:
+    #         return jsonify({'items': item})
+    # else:
+    #     return jsonify({'items': items})
 
 
 """
